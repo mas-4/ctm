@@ -1,6 +1,9 @@
+from __future__ import annotations
+from typing import Union, Hashable
+
 # Copyright 2013 Philip N. Klein
 
-def getitem(v,k):
+def getitem(v: 'Vec', k: Hashable) -> Union[float, int]:
     """
     Return the value of entry k in v.
     Be sure getitem(v,k) returns 0 if k is not represented in v.f.
@@ -12,9 +15,12 @@ def getitem(v,k):
     0
     """
     assert k in v.D
-    pass
+    if k in v.f:
+        return v.f[k]
+    else:
+        return 0
 
-def setitem(v,k,val):
+def setitem(v: 'Vec', k: Hashable, val: int) -> None:
     """
     Set the element of v with label d to be val.
     setitem(v,d,val) should set the value for key d even if d
@@ -32,9 +38,9 @@ def setitem(v,k,val):
     0
     """
     assert k in v.D
-    pass
+    v.f[k] = val
 
-def equal(u,v):
+def equal(u: 'Vec', v: 'Vec') -> bool:
     """
     Return true iff u is equal to v.
     Because of sparse representation, it is not enough to compare dictionaries
@@ -68,12 +74,17 @@ def equal(u,v):
     False
     """
     assert u.D == v.D
-    pass
+    ret: bool = True
+    for k in u.D:
+        if not u[k] == v[k]:
+            ret = False
+            break
+    return ret
 
-def add(u,v):
+def add(u: 'Vec', v: 'Vec') -> 'Vec':
     """
     Returns the sum of the two vectors.
-    
+
     Consider using brackets notation u[...] and v[...] in your procedure
     to access entries of the input vectors.  This avoids some sparsity bugs.
 
@@ -105,9 +116,9 @@ def add(u,v):
     True
     """
     assert u.D == v.D
-    pass
+    return Vec(u.D, {k:u[k]+v[k] for k in u.D})
 
-def dot(u,v):
+def dot(u: 'Vec',v: 'Vec') -> Union[float, int]:
     """
     Returns the dot product of the two vectors.
 
@@ -139,9 +150,9 @@ def dot(u,v):
     12
     """
     assert u.D == v.D
-    pass
+    return sum(u[k]*v[k] for k in u.D)
 
-def scalar_mul(v, alpha):
+def scalar_mul(v: 'Vec', alpha: Union[int, float]) -> 'Vec':
     """
     Returns the scalar-vector product alpha times v.
 
@@ -159,9 +170,9 @@ def scalar_mul(v, alpha):
     >>> u == Vec({'x','y','z','w'},{'x':1,'y':2,'z':3,'w':4})
     True
     """
-    pass
+    return Vec(v.D, {k: v[k]*alpha for k in v.D})
 
-def neg(v):
+def neg(v: 'Vec') -> 'Vec':
     """
     Returns the negation of a vector.
 
@@ -176,7 +187,7 @@ def neg(v):
     >>> -Vec({'a','b','c'}, {'a':1}) == Vec({'a','b','c'}, {'a':-1})
     True
     """
-    pass
+    return Vec(v.D, {k:-v[k] for k in v.D})
 
 ###############################################################################################################################
 
@@ -187,7 +198,7 @@ class Vec:
     f - a dictionary mapping (some) domain elements to field elements
         elements of D not appearing in f are implicitly mapped to zero
     """
-    def __init__(self, labels, function):
+    def __init__(self, labels: set, function: dict):
         assert isinstance(labels, set)
         assert isinstance(function, dict)
         self.D = labels
@@ -198,26 +209,26 @@ class Vec:
     __neg__ = neg
     __rmul__ = scalar_mul #if left arg of * is primitive, assume it's a scalar
 
-    def __mul__(self,other):
+    def __mul__(self,other: Vec) -> Union[float,Vec]:
         #If other is a vector, returns the dot product of self and other
         if isinstance(other, Vec):
             return dot(self,other)
         else:
             return NotImplemented  #  Will cause other.__rmul__(self) to be invoked
 
-    def __truediv__(self,other):  # Scalar division
+    def __truediv__(self,other: Vec) -> Vec:  # Scalar division
         return (1/other)*self
 
     __add__ = add
 
-    def __radd__(self, other):
+    def __radd__(self, other: Vec) -> Union[Vec,None]:
         "Hack to allow sum(...) to work with vectors"
         if other == 0:
             return self
 
-    def __sub__(a,b):
+    def __sub__(self, b: Vec) -> Vec:
         "Returns a vector which is the difference of a and b."
-        return a+(-b)
+        return self+(-b)
 
     __eq__ = equal
 
@@ -232,7 +243,7 @@ class Vec:
             else: return False
         return s < 1e-20
 
-    def __str__(v):
+    def __str__(self):
         "pretty-printing"
         D_list = sorted(v.D, key=repr)
         numdec = 3
@@ -258,3 +269,7 @@ class Vec:
 
     def __iter__(self):
         raise TypeError('%r object is not iterable' % self.__class__.__name__)
+
+if __name__ == '__main__':
+    import doctest
+    doctest.testmod()
