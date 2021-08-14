@@ -118,7 +118,7 @@ def add(u: 'Vec', v: 'Vec') -> 'Vec':
     assert u.D == v.D
     return Vec(u.D, {k:u[k]+v[k] for k in u.D})
 
-def dot(u: 'Vec',v: 'Vec') -> Union[float, int]:
+def dot(u: 'Vec', v: 'Vec') -> Union[int, float]:
     """
     Returns the dot product of the two vectors.
 
